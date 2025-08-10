@@ -1,0 +1,17 @@
+jobmanager.rpc.address: localhost
+jobmanager.rpc.port: 6123
+taskmanager.numberOfTaskSlots: 8
+parallelism.default: 8
+state.backend: rocksdb
+state.checkpoints.dir: file:///flink/checkpoints
+state.savepoints.dir: file:///flink/savepoints
+execution.checkpointing.interval: 10000
+execution.checkpointing.mode: EXACTLY_ONCE
+execution.checkpointing.timeout: 60000
+execution.checkpointing.min-pause: 5000
+execution.checkpointing.tolerable-failed-checkpoints: 3
+restart-strategy: fixed-delay
+restart-strategy.fixed-delay.attempts: 5
+restart-strategy.fixed-delay.delay: 10 s
+metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporter
+metrics.reporter.prom.port: 9249

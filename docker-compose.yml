@@ -1,0 +1,104 @@
+version: '3.8'
+services:
+  kafka:
+    image: bitnami/kafka:3.7
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    networks:
+      - analytics-net
+  zookeeper:
+    image: bitnami/zookeeper:3.8
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
+    networks:
+      - analytics-net
+  cassandra:
+    build: ./cassandra
+    ports:
+      - "9042:9042"
+    networks:
+      - analytics-net
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+  redis:
+    build: ./redis-layer
+    ports:
+      - "6379:6379"
+    networks:
+      - analytics-net
+    volumes:
+      - redis-data:/data
+  kafka-producer:
+    build: ./kafka-producer
+    depends_on:
+      - kafka
+    networks:
+      - analytics-net
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+      - SHARED_CONFIG_PATH=/shared-config/config.env
+  flink-jobs:
+    build: ./flink-jobs
+    depends_on:
+      - kafka
+      - cassandra
+      - redis
+    networks:
+      - analytics-net
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+      - CASSANDRA_HOST=cassandra
+      - REDIS_HOST=redis
+      - SHARED_CONFIG_PATH=/shared-config/config.env
+  api:
+    build: ./api
+    depends_on:
+      - cassandra
+      - redis
+    ports:
+      - "8080:8080"
+    networks:
+      - analytics-net
+    environment:
+      - CASSANDRA_HOST=cassandra
+      - REDIS_HOST=redis
+      - SHARED_CONFIG_PATH=/shared-config/config.env
+  dashboard:
+    build: ./dashboard
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+    networks:
+      - analytics-net
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - analytics-net
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - analytics-net
+    depends_on:
+      - prometheus
+networks:
+  analytics-net:
+    driver: bridge
+volumes:
+  cassandra-data:
+  redis-data:
