@@ -13,6 +13,24 @@ export class WebSocketService {
   private isReconnecting: boolean = false;
   private heartbeatInterval: number | null = null;
 
+  private startHeartbeat(): void {
+    if (this.heartbeatInterval !== null) {
+      this.stopHeartbeat();
+    }
+    this.heartbeatInterval = window.setInterval(() => {
+      if (this.socket?.readyState === WebSocket.OPEN) {
+        this.socket.send(JSON.stringify({ type: 'heartbeat' }));
+      }
+    }, 30000); // Send heartbeat every 30 seconds
+  }
+
+  private stopHeartbeat(): void {
+    if (this.heartbeatInterval !== null) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+  }
+
   async connect(url: string): Promise<void> {
     this.url = url;
     this.reconnectAttempts = 0;
@@ -70,10 +88,12 @@ export class WebSocketService {
   }
 
   disconnect() {
+    this.stopHeartbeat();
     if (this.socket) {
       this.socket.close();
       this.socket = null;
       this.listeners = [];
+      this.reconnectAttempts = this.maxReconnectAttempts; // Prevent auto-reconnect
     }
   }
 
@@ -82,5 +102,19 @@ export class WebSocketService {
     return () => {
       this.listeners = this.listeners.filter(listener => listener !== cb);
     };
+  }
+
+  isConnected(): boolean {
+    return this.socket?.readyState === WebSocket.OPEN;
+  }
+
+  send(data: any): void {
+    if (!this.isConnected()) {
+      throw new Error('WebSocket is not connected');
+    }
+    this.socket!.send(JSON.stringify({
+      type: 'message',
+      payload: data
+    }));
   }
 }
