@@ -23,3 +23,19 @@ jobs:
         distribution: 'temurin'
     - name: Build with Ant
       run: ant -noinput -buildfile build.xml
+
+##The job failed because the Ant build script expects a src directory at the project root, but it does not exist. The error message is:
+
+# srcdir "/home/runner/work/real-time-analytics-engine/real-time-analytics-engine/src" does not exist!
+
+# Solution:
+
+# Make sure your source code is in a directory named src at the root of your repository.
+# If your source files are elsewhere, update the build.xml file’s <javac> srcdir attribute to the correct path.
+# Example fix for build.xml if your sources are in java-src:
+
+# XML
+# <javac srcdir="java-src" destdir="build"/>
+# Or, create a src directory and place your Java source files there.
+
+# View build.xml
