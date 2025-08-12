@@ -1,0 +1,6 @@
+<project name="real-time-analytics-engine" default="compile">
+    <target name="compile">
+        <mkdir dir="build"/>
+        <javac srcdir="src" destdir="build"/>
+    </target>
+</project>
