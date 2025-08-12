@@ -1,0 +1,4 @@
+node_modules/
+real_time_analytics_engine/node_modules/
+.DS_Store
+.env

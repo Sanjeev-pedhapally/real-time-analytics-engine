@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.web.reactive.config.EnableWebFlux;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.faang.analytics")
 @EnableWebFlux
 public class ApiApplication implements WebFluxConfigurer {
     public static void main(String[] args) {

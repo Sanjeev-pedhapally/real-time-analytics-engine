@@ -17,25 +17,28 @@ public class AnalyticsService {
 
     public Mono<String> getMetrics() {
         return Mono.fromCallable(() -> redisService.get("metrics"))
+            .map(result -> result != null ? result : "{}")
             .onErrorResume(e -> {
-                logger.error("Error fetching metrics: {}", e.getMessage());
+                logger.error("Failed to get metrics from Redis", e);
                 return Mono.just("{}");
             });
     }
 
-    public Mono<String> getTopProducts() {
-        return Mono.fromCallable(() -> redisService.get("top-products"))
+    public Mono<String> getPageViews() {
+        return Mono.fromCallable(() -> redisService.get("pageviews"))
+            .map(result -> result != null ? result : "[]")
             .onErrorResume(e -> {
-                logger.error("Error fetching top products: {}", e.getMessage());
+                logger.error("Failed to get page views from Redis", e);
                 return Mono.just("[]");
             });
     }
 
-    public Mono<String> getRevenue() {
-        return Mono.fromCallable(() -> redisService.get("revenue"))
+    public Mono<String> getCartActions() {
+        return Mono.fromCallable(() -> redisService.get("cartActions"))
+            .map(result -> result != null ? result : "[]")
             .onErrorResume(e -> {
-                logger.error("Error fetching revenue: {}", e.getMessage());
-                return Mono.just("0");
+                logger.error("Failed to get cart actions from Redis", e);
+                return Mono.just("[]");
             });
     }
 }

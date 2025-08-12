@@ -19,16 +19,16 @@ public class AnalyticsController {
                 .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().body(e.getMessage())));
     }
 
-    @GetMapping("/top-products")
-    public Mono<ResponseEntity<String>> getTopProducts() {
-        return analyticsService.getTopProducts()
+    @GetMapping("/page-views")
+    public Mono<ResponseEntity<String>> getPageViews() {
+        return analyticsService.getPageViews()
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().body(e.getMessage())));
     }
 
-    @GetMapping("/revenue")
-    public Mono<ResponseEntity<String>> getRevenue() {
-        return analyticsService.getRevenue()
+    @GetMapping("/cart-actions")
+    public Mono<ResponseEntity<String>> getCartActions() {
+        return analyticsService.getCartActions()
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().body(e.getMessage())));
     }
