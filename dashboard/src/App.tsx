@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import { RealTimeChart } from './components/RealTimeChart';
 import { WebSocketService } from './WebSocketService';
 

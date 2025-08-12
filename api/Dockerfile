@@ -1,5 +1,5 @@
 # Spring Boot WebFlux API Dockerfile
-FROM eclipse-temurin:17-jre-alpine
+FROM openjdk:17-jdk
 WORKDIR /app
 COPY target/api-1.0.0.jar /app/api.jar
 COPY src/main/resources/application.properties /app/application.properties

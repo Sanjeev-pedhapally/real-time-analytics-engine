@@ -1,0 +1,5 @@
+/Users/rajkumarmyakala/GitHub_Projects/real-time-analytics-engine/kafka-producer/src/main/java/com/faang/analytics/KafkaEventProducer.java
+/Users/rajkumarmyakala/GitHub_Projects/real-time-analytics-engine/kafka-producer/src/main/java/com/faang/analytics/model/CartAction.java
+/Users/rajkumarmyakala/GitHub_Projects/real-time-analytics-engine/kafka-producer/src/main/java/com/faang/analytics/model/PageView.java
+/Users/rajkumarmyakala/GitHub_Projects/real-time-analytics-engine/kafka-producer/src/main/java/com/faang/analytics/model/Purchase.java
+/Users/rajkumarmyakala/GitHub_Projects/real-time-analytics-engine/kafka-producer/src/main/java/com/faang/analytics/model/UserActivity.java

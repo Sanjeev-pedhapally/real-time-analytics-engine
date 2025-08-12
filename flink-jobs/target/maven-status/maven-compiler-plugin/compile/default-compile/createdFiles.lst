@@ -1,0 +1,7 @@
+com/faang/analytics/StreamProcessingJob.class
+com/faang/analytics/WindowAggregator.class
+com/faang/analytics/EventDeserializer.class
+com/faang/analytics/WindowAggregator$Result.class
+com/faang/analytics/EventProcessor.class
+com/faang/analytics/StreamProcessingJob$RedisSink.class
+com/faang/analytics/WindowAggregator$Accumulator.class

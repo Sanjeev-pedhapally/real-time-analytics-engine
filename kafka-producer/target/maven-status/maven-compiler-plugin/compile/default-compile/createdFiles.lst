@@ -1,0 +1,5 @@
+com/faang/analytics/model/Purchase.class
+com/faang/analytics/model/PageView.class
+com/faang/analytics/model/CartAction.class
+com/faang/analytics/model/UserActivity.class
+com/faang/analytics/KafkaEventProducer.class

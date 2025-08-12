@@ -2,17 +2,14 @@ package com.faang.analytics;
 
 import com.faang.analytics.model.Purchase;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
-import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
-import org.apache.flink.streaming.connectors.cassandra.CassandraSink;
+import org.apache.flink.connector.kafka.source.KafkaSource;
+import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import redis.clients.jedis.Jedis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Properties;
 
 public class StreamProcessingJob {
     private static final Logger logger = LoggerFactory.getLogger(StreamProcessingJob.class);
@@ -20,22 +17,23 @@ public class StreamProcessingJob {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.enableCheckpointing(10000); // 10s
-        env.getCheckpointConfig().setCheckpointingMode(org.apache.flink.api.common.state.CheckpointingMode.EXACTLY_ONCE);
+        env.getCheckpointConfig().setCheckpointingMode(org.apache.flink.streaming.api.CheckpointingMode.EXACTLY_ONCE);
         env.setParallelism(8);
 
-        Properties kafkaProps = new Properties();
-        kafkaProps.setProperty("bootstrap.servers", "kafka:9092");
-        kafkaProps.setProperty("group.id", "flink-analytics-group");
+        KafkaSource<Object> source = KafkaSource.<Object>builder()
+                .setBootstrapServers("kafka:9092")
+                .setTopics("ecommerce-events")
+                .setGroupId("flink-analytics-group")
+                .setStartingOffsets(OffsetsInitializer.earliest())
+                .setValueOnlyDeserializer(new EventDeserializer())
+                .build();
 
-        FlinkKafkaConsumer<Object> consumer = new FlinkKafkaConsumer<>(
-                "ecommerce-events",
-                new EventDeserializer(),
-                kafkaProps
-        );
-        consumer.assignTimestampsAndWatermarks(WatermarkStrategy.forMonotonousTimestamps());
+        DataStream<Object> stream = env.fromSource(
+                source,
+                WatermarkStrategy.forMonotonousTimestamps(),
+                "Kafka Source");
 
-        DataStream<Purchase> purchases = env
-                .addSource(consumer)
+        DataStream<Purchase> purchases = stream
                 .filter(e -> e instanceof Purchase)
                 .map(e -> (Purchase) e);
 
@@ -44,12 +42,10 @@ public class StreamProcessingJob {
             .keyBy(Purchase::getProductId)
             .window(org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows.of(Time.minutes(1)))
             .aggregate(new WindowAggregator(), new EventProcessor())
-            .addSink(new CassandraSink<String>() {
-                @Override
-                public void invoke(String value, Context context) {
-                    // Write to Cassandra (pseudo-code, replace with actual DAO)
-                    logger.info("CassandraSink: {}", value);
-                }
+            .map(value -> {
+                // Write to Cassandra (pseudo-code, replace with actual DAO)
+                logger.info("CassandraSink: {}", value);
+                return value;
             });
 
         purchases
@@ -68,12 +64,23 @@ public class StreamProcessingJob {
     }
 
     // Redis sink implementation
-    public static class RedisSink extends org.apache.flink.streaming.api.functions.sink.SinkFunction<String> {
+    public static class RedisSink implements org.apache.flink.streaming.api.functions.sink.SinkFunction<String> {
         private transient Jedis jedis;
+
         @Override
-        public void invoke(String value, Context context) {
-            if (jedis == null) jedis = new Jedis("redis", 6379);
-            jedis.publish("analytics-updates", value);
+        public void invoke(String value, org.apache.flink.streaming.api.functions.sink.SinkFunction.Context context) throws Exception {
+            if (jedis == null) {
+                jedis = new Jedis("redis", 6379);
+            }
+            try {
+                jedis.publish("analytics-updates", value);
+            } catch (Exception e) {
+                if (jedis != null) {
+                    jedis.close();
+                    jedis = null;
+                }
+                throw e;
+            }
         }
     }
 }

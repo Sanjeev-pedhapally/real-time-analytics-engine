@@ -1,0 +1,4 @@
+com/faang/analytics/ApiApplication.class
+com/faang/analytics/service/AnalyticsService.class
+com/faang/analytics/config/WebFluxConfig.class
+com/faang/analytics/controller/AnalyticsController.class

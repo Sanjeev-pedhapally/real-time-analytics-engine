@@ -1,5 +1,5 @@
 # Production Dockerfile for Kafka Producer
-FROM eclipse-temurin:17-jre-alpine
+FROM openjdk:17-jdk
 WORKDIR /app
 COPY target/kafka-producer-1.0.0.jar /app/kafka-producer.jar
 COPY src/main/resources/application.properties /app/application.properties
