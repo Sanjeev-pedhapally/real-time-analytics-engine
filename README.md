@@ -8,6 +8,101 @@ A production-grade, event-driven analytics platform designed to process and anal
 - **Business Intelligence**: Generate instant insights about revenue, popular products, and conversion rates
 - **Performance Monitoring**: Monitor system health, response times, and service metrics
 
+## System Architecture
+The system is built using a modern, scalable architecture that enables real-time data processing and analytics.
+
+```mermaid
+flowchart LR
+    subgraph Frontend
+        Dashboard[React Dashboard]
+        WebSocket[WebSocket Service]
+    end
+
+    subgraph Backend
+        API[Spring WebFlux API]
+        Flink[Apache Flink Jobs]
+        Redis[Redis Cache]
+        Cassandra[(Apache Cassandra)]
+    end
+
+    subgraph Message Queue
+        Kafka[Apache Kafka]
+        Producer[Event Producer]
+    end
+
+    Producer -->|Events| Kafka
+    Kafka -->|Stream| Flink
+    Flink -->|Process| Cassandra
+    Flink -->|Cache| Redis
+    API -->|Query| Cassandra
+    API -->|Cache| Redis
+    WebSocket -->|Connect| API
+    Dashboard -->|Display| WebSocket
+```
+
+## Data Flow
+The following diagram illustrates how data flows through the system:
+
+```mermaid
+flowchart LR
+    subgraph Events
+        PV[Page Views]
+        CA[Cart Actions]
+        P[Purchases]
+    end
+
+    subgraph Processing
+        KP[Kafka Producer]
+        F[Flink Processor]
+        style F fill:#f96
+    end
+
+    subgraph Storage
+        C[(Cassandra)]
+        R[(Redis)]
+    end
+
+    subgraph Analytics
+        RT[Real-time Metrics]
+        H[Historical Data]
+    end
+
+    PV & CA & P --> KP
+    KP -->|Stream| F
+    F -->|Write| C
+    F -->|Cache| R
+    R -->|Fast Access| RT
+    C -->|Query| H
+```
+
+## Real-time Processing
+This sequence diagram shows how the system processes and delivers real-time updates:
+
+```mermaid
+sequenceDiagram
+    participant U as User Action
+    participant P as Producer
+    participant K as Kafka
+    participant F as Flink
+    participant C as Cassandra
+    participant R as Redis
+    participant A as API
+    participant W as WebSocket
+    participant D as Dashboard
+
+    U->>P: Generate Event
+    P->>K: Publish Event
+    K->>F: Stream Event
+    F->>C: Store Processed Data
+    F->>R: Cache Analytics
+    D->>W: Subscribe
+    W->>A: Connect
+    A->>R: Query Cache
+    R-->>A: Return Analytics
+    A-->>W: Send Update
+    W-->>D: Update UI
+```
+
 The platform processes 10,000+ events per second with sub-100ms latency, maintaining 99.99% uptime and fault tolerance through distributed architecture and redundancy.
 
 ### Key Features
